@@ -28,7 +28,7 @@ def detectOutliers (df, column):
         return [i for i,x in enumerate(outliers) if x==True] #outliers.count(True)
     return []
 
-def analisisDF(df):
+def analisisDF(df, minRate = minRate):
     model_cols = df.columns.tolist()
     resultMap = {
         "duplicateCols": [],
@@ -43,7 +43,7 @@ def analisisDF(df):
         # tooManyNanCols
         alist = df[col].tolist()
         nanCount = sum(df[col].isnull().tolist())
-        if nanCount / len(alist) > 0.8:
+        if nanCount / len(alist) > minRate:
             resultMap["tooManyNanCols"].append("col:["+col+"],rate:["+str(nanCount / len(alist))+"]")
         
         # formatInconsitenceCols
@@ -72,13 +72,13 @@ def analisisDF(df):
                 # similarCols
                 count = 0
                 count += sum(map(lambda x, y: 1 if str(x)==str(y) else 0 , list1, list2))
-                if count / len(list1) > 0.8:
+                if count / len(list1) > minRate:
                     resultMap["similarCols"].append("cols:["+col+"|"+col2compare+"],rate:["+str(count / len(list1))+"]")
                 
                 # containsCols
                 containsCount = 0
                 containsCount += sum(map(lambda x, y: 1 if str(x).find(str(y)) != -1 or str(y).find(str(x)) != -1 else 0 , list1, list2))
-                if containsCount / len(list1) > 0.8:
+                if containsCount / len(list1) > minRate:
                     resultMap["containsCols"].append("cols:["+col+"|"+col2compare+"],rate:["+str(containsCount / len(list1))+"]")
                 
                 # proportionalCols
