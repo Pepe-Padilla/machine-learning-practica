@@ -28,7 +28,7 @@ def detectOutliers (df, column):
         return [i for i,x in enumerate(outliers) if x==True] #outliers.count(True)
     return []
 
-def analisisDF(df, minRate = minRate):
+def analisisDF(df, minRate = 0.8):
     model_cols = df.columns.tolist()
     resultMap = {
         "duplicateCols": [],
@@ -37,7 +37,8 @@ def analisisDF(df, minRate = minRate):
         "formatInconsitenceCols": [],
         "tooManyNanCols": [],
         "proportionalCols": [],
-        "outliersCols": []
+        "outliersCols": [],
+        "uniqueCols":[]
     }
     for col in model_cols:
         # tooManyNanCols
@@ -59,6 +60,12 @@ def analisisDF(df, minRate = minRate):
         outliers = detectOutliers(df,col)
         if len(outliers) > 0:
             resultMap["outliersCols"].append("col:["+col+"],outliersIndex:"+str(outliers)+"")
+
+        # uniqueCols
+        unCols = df[col].unique()
+        uniqueRate = len(unCols)/len(df[col])
+        if(uniqueRate <= 1-minRate):
+            resultMap["uniqueCols"].append("col:["+col+"],unique rate:["+str(uniqueRate)+"],vals:["+str(df[col].value_counts())+"]")
         
         for col2compare in model_cols[model_cols.index(col)+1:]:
             if(col != col2compare):
