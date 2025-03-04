@@ -45,7 +45,7 @@ def analisisDF(df, minRate = 0.8):
         alist = df[col].tolist()
         nanCount = sum(df[col].isnull().tolist())
         if nanCount / len(alist) > minRate:
-            resultMap["tooManyNanCols"].append("col:["+col+"],rate:["+str(nanCount / len(alist))+"]")
+            resultMap["tooManyNanCols"].append({"col":col,"rate":nanCount / len(alist)})
         
         # formatInconsitenceCols
         dataType = None
@@ -53,19 +53,19 @@ def analisisDF(df, minRate = 0.8):
             if not dataType:
                 dataType = type(element)
             if type(element) != dataType:
-                resultMap["formatInconsitenceCols"].append("col:["+col+"],types:["+str(dataType)+"|"+str(type(element))+"]")
+                resultMap["formatInconsitenceCols"].append({"col":col,"types":str(dataType)+"|"+str(type(element))})
                 break
         
         # outliersCols
         outliers = detectOutliers(df,col)
         if len(outliers) > 0:
-            resultMap["outliersCols"].append("col:["+col+"],outliersIndex:"+str(outliers)+"")
+            resultMap["outliersCols"].append({"col":col,"outliersIndex":str(outliers)})
 
         # uniqueCols
         unCols = df[col].unique()
         uniqueRate = len(unCols)/len(df[col])
         if(uniqueRate <= 1-minRate):
-            resultMap["uniqueCols"].append("col:["+col+"],unique rate:["+str(uniqueRate)+"],vals:["+str(df[col].value_counts())+"]")
+            resultMap["uniqueCols"].append({"col":col,"unique rate":str(uniqueRate),"vals":df[col].value_counts().to_json(orient="index")})
         
         for col2compare in model_cols[model_cols.index(col)+1:]:
             if(col != col2compare):
@@ -74,19 +74,19 @@ def analisisDF(df, minRate = 0.8):
                 
                 # duplicateCols
                 if(list1 == list2):
-                    resultMap["duplicateCols"].append("cols:["+col+"|"+col2compare+"]")
+                    resultMap["duplicateCols"].append({"cols":col, "col2":col2compare})
                 
                 # similarCols
                 count = 0
                 count += sum(map(lambda x, y: 1 if str(x)==str(y) else 0 , list1, list2))
                 if count / len(list1) > minRate:
-                    resultMap["similarCols"].append("cols:["+col+"|"+col2compare+"],rate:["+str(count / len(list1))+"]")
+                    resultMap["similarCols"].append({"cols":col, "col2":col2compare,"rate":count / len(list1)})
                 
                 # containsCols
                 containsCount = 0
                 containsCount += sum(map(lambda x, y: 1 if str(x).find(str(y)) != -1 or str(y).find(str(x)) != -1 else 0 , list1, list2))
                 if containsCount / len(list1) > minRate:
-                    resultMap["containsCols"].append("cols:["+col+"|"+col2compare+"],rate:["+str(containsCount / len(list1))+"]")
+                    resultMap["containsCols"].append({"cols":col, "col2":col2compare,"rate":containsCount / len(list1)})
                 
                 # proportionalCols
                 proportion = None
@@ -102,5 +102,5 @@ def analisisDF(df, minRate = 0.8):
                             areAllProportion = False
                             break
                 if areAllProportion:
-                    resultMap["proportionalCols"].append("cols:["+col+"|"+col2compare+"],proportion:["+str(proportion)+"]")
+                    resultMap["proportionalCols"].append({"cols":col, "col2":col2compare, "proportion":proportion})
     return resultMap
